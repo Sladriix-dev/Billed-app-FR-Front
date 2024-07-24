@@ -3,12 +3,19 @@ import ErrorPage from "./ErrorPage.js";
 import LoadingPage from "./LoadingPage.js";
 import Actions from "./Actions.js";
 
+const SUPPORTED_FORMATS = ["pdf", "png", "jpg", "jpeg"];
+
 const row = (bill) => {
+  const fileExtension = bill.fileName.split(".").pop().toLowerCase();
+  if (!SUPPORTED_FORMATS.includes(fileExtension)) {
+    return ""; // Ignorer cette facture si le format n'est pas pris en charge
+  }
+
   return `
     <tr>
       <td>${bill.type}</td>
       <td>${bill.name}</td>
-      <td>${bill.date}</td>
+      <td data-testid="bill-date">${bill.date}</td>
       <td>${bill.amount} €</td>
       <td>${bill.status}</td>
       <td>
@@ -23,7 +30,6 @@ const rows = (data) => {
 };
 
 const sortBillsByDate = (bills) => {
-  // Vérifier que bills est défini avant de le trier
   return bills && bills.length
     ? bills.sort((a, b) => new Date(b.date) - new Date(a.date))
     : [];
@@ -31,7 +37,7 @@ const sortBillsByDate = (bills) => {
 
 export default ({ data: bills, loading, error }) => {
   const modal = () => `
-    <div class="modal fade" id="modaleFile" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal fade" id="modaleFile" data-testid="modaleFile" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
         <div class="modal-content">
           <div class="modal-header">
@@ -53,7 +59,6 @@ export default ({ data: bills, loading, error }) => {
     return ErrorPage(error);
   }
 
-  // Trier les notes de frais par date avant de les afficher
   const sortedBills = sortBillsByDate(bills);
 
   return `
